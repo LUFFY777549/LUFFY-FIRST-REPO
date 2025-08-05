@@ -1,8 +1,8 @@
 from pyrogram import filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from pyrogram.enums import ChatMemberStatus
-from Naruto import bot
-from Naruto.db import start_tag, stop_tag, is_tagging_active, get_tag_data
+from Tagger import bot
+from Tagger.db import start_tag, stop_tag, is_tagging_active, get_tag_data
 import asyncio
 import random
 import logging
