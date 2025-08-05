@@ -1,0 +1,6 @@
+kurigram
+tgcrypto 
+pymongo
+python-dotenv
+motor
+psutil 
