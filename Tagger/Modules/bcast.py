@@ -20,7 +20,7 @@ async def broadcast_handler(_, message: Message):
 
     # Broadcast to Users
     users_cursor = await get_all_users()
-    async for user in users_cursor:
+    async for user in users_cursor:  # Async iteration
         try:
             if isinstance(content, Message):
                 await content.copy(user["_id"])
@@ -32,8 +32,9 @@ async def broadcast_handler(_, message: Message):
             pass
 
     # Broadcast to Groups
-    groups = await get_all_groups()
-    for group_id in groups:
+    groups_cursor = await get_all_groups()
+    async for group in groups_cursor:  # Async iteration
+        group_id = group["_id"]
         try:
             if isinstance(content, Message):
                 sent = await content.copy(group_id)
