@@ -1,8 +1,8 @@
 from pyrogram import filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from pyrogram.enums import ChatMemberStatus
 from Tagger import bot
 from Tagger.db import start_tag, stop_tag, is_tagging_active, get_tag_data
-from Tagger.utils import is_user_admin
 import asyncio
 import random
 import logging
@@ -14,16 +14,28 @@ logger = logging.getLogger(__name__)
 # Emojis for tagging
 EMOJIS = ["🦁", "🐯", "🐱", "🐶", "🐺", "🐻", "🐻‍❄️", "🐨", "🐼", "🐹", "🐭", "🐰", "🦊", "🦝", "🐮", "🐷"]
 
+# Function to check if user is group admin
+async def is_user_admin(bot, chat_id, user_id):
+    try:
+        member = await bot.get_chat_member(chat_id, user_id)
+        status = member.status
+        logger.info(f"Checking admin status for user {user_id} in chat {chat_id}: {status}")
+
+        return status in (ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER)
+    except Exception as e:
+        logger.error(f"Error checking admin status: {e}")
+        return False
+
 # /tagall command handler
 @bot.on_message(filters.command("tagall") & filters.group)
 async def tagall(_, message: Message):
     chat_id = message.chat.id
     user_id = message.from_user.id
 
-    # Check if user is admin
+    # Check if user is group admin (no bot admin check)
     if not await is_user_admin(bot, chat_id, user_id):
         logger.info(f"Non-admin user {user_id} tried to use /tagall in chat {chat_id}")
-        return await message.reply("❌ You must be an admin to use this command!", quote=True)
+        return await message.reply("❌ Only group admins can use this command!", quote=True)
 
     if message.reply_to_message:
         tag_text = message.reply_to_message.text
