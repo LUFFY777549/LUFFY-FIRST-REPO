@@ -1,8 +1,8 @@
 from pyrogram import filters
 from pyrogram.types import Message
-from revengers import bot
-from revengers.db import stop_tag, is_tagging_active
-from revengers.utils import is_user_admin
+from Tagger import bot
+from Tagger.db import stop_tag, is_tagging_active
+from Tagger.utils import is_user_admin
 import logging
 
 # Set up logging
