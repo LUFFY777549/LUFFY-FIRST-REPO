@@ -4,7 +4,7 @@ from Tagger import bot
 from Tagger.db import save_user, save_group
 
 # ADMIN/OWNER ID jisko logs jayenge
-OWNER_ID = 7019600964  # apna user id yahan dal
+OWNER_ID = 7576729648  # apna user id yahan dal
 
 # ✅ Handle /start in private chat
 @bot.on_message(filters.command("start") & filters.private)
