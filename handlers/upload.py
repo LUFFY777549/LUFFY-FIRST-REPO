@@ -1,6 +1,6 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message
-from database.db import upload_waifu
+from database.db import add_waifu
 
 RARITIES = {
     1: "⚪️ Common",
@@ -24,9 +24,13 @@ RARITIES = {
 }
 
 
-@Client.on_message(filters.command("upload", prefixes=["/", "."]))
+@Client.on_message(filters.command("upload", prefixes=["/", "."]) & filters.reply)
 async def upload_waifu_handler(client: Client, message: Message):
     try:
+        # Check if replied message has photo
+        if not message.reply_to_message.photo:
+            return await message.reply("❌ Reply to a waifu image with `/upload {name} {anime} {rarity} {id}`")
+
         if len(message.command) < 5:
             return await message.reply(
                 "❌ Usage: `/upload {name} {anime} {rarity_number} {waifu_id}`\n\n"
@@ -42,9 +46,10 @@ async def upload_waifu_handler(client: Client, message: Message):
             return await message.reply("❌ Invalid rarity number! Please use 1–18.")
 
         rarity = RARITIES[rarity_number]
+        image_file_id = message.reply_to_message.photo.file_id  # ✅ file_id save karo
 
-        # Add waifu to DB
-        await upload_waifu(name, anime, rarity, str(waifu_id))
+        # Save waifu in DB
+        await add_waifu(name, anime, rarity, str(waifu_id), image_file_id)
 
         await message.reply(
             f"✅ **Waifu Uploaded Successfully!**\n\n"
