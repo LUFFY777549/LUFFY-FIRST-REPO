@@ -1,8 +1,8 @@
 import motor.motor_asyncio
-from config import DB_URI
+from config import MONGO_URI
 
 # Mongo Client
-mongo_client = motor.motor_asyncio.AsyncIOMotorClient(DB_URI)
+mongo_client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URI)
 db = mongo_client["WaifuNguessBot"]
 
 # Collections
