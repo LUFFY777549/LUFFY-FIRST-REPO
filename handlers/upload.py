@@ -1,7 +1,6 @@
-from pyrogram import filters
+from pyrogram import Client, filters
 from pyrogram.types import Message
-from WaifuBot import bot
-from database.db import add_waifu
+from database.db import upload_waifu
 
 RARITIES = {
     1: "⚪️ Common",
@@ -24,12 +23,14 @@ RARITIES = {
     18: "🍑 Echhi",
 }
 
-@bot.on_message(filters.command("upload", prefixes=["/", "."]))
-async def upload_waifu(_, message: Message):
+
+@Client.on_message(filters.command("upload", prefixes=["/", "."]))
+async def upload_waifu_handler(client: Client, message: Message):
     try:
         if len(message.command) < 5:
             return await message.reply(
-                "❌ Usage: `/upload {name} {anime} {rarity_number} {waifu_id}`\n\nExample:\n`/upload Naruto-Uzumaki Naruto-Shippuden 5 11`"
+                "❌ Usage: `/upload {name} {anime} {rarity_number} {waifu_id}`\n\n"
+                "Example:\n`/upload Naruto-Uzumaki Naruto-Shippuden 5 11`"
             )
 
         name = message.command[1]
@@ -43,10 +44,10 @@ async def upload_waifu(_, message: Message):
         rarity = RARITIES[rarity_number]
 
         # Add waifu to DB
-        await add_waifu(waifu_id, name, anime, rarity)
+        await upload_waifu(name, anime, rarity, str(waifu_id))
 
         await message.reply(
-            f"✅ Waifu Uploaded Successfully!\n\n"
+            f"✅ **Waifu Uploaded Successfully!**\n\n"
             f"👤 **Name:** {name}\n"
             f"📺 **Anime:** {anime}\n"
             f"💎 **Rarity:** {rarity}\n"
