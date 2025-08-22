@@ -18,7 +18,7 @@ async def send_new_round(chat_id, client: Client):
 
     msg = await client.send_photo(
         chat_id,
-        photo=waifu["image_url"],  # db.py me tumne "image_url" rakha hai
+        photo=waifu["image"],   # ✅ yahan DB me jo file_id save hua tha wahi use hoga
         caption=(
             "🎭 **Guess the Waifu!**\n\n"
             "⏳ You have **5 minutes** to guess her name!"
