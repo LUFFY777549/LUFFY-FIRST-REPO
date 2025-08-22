@@ -29,7 +29,9 @@ async def upload_waifu_handler(client: Client, message: Message):
     try:
         # Check if replied message has photo
         if not message.reply_to_message.photo:
-            return await message.reply("❌ Reply to a waifu image with `/upload {name} {anime} {rarity} {id}`")
+            return await message.reply(
+                "❌ Reply to a waifu image with:\n`/upload {name} {anime} {rarity_number} {waifu_id}`"
+            )
 
         if len(message.command) < 5:
             return await message.reply(
@@ -46,7 +48,8 @@ async def upload_waifu_handler(client: Client, message: Message):
             return await message.reply("❌ Invalid rarity number! Please use 1–18.")
 
         rarity = RARITIES[rarity_number]
-        image_file_id = message.reply_to_message.photo.file_id  # ✅ file_id save karo
+        # ✅ Get highest resolution file_id
+        image_file_id = message.reply_to_message.photo[-1].file_id
 
         # Save waifu in DB
         await upload_waifu(name, anime, rarity, str(waifu_id), image_file_id)
