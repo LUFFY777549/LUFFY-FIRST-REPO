@@ -1,88 +1,136 @@
+# handlers/nguess.py
 import asyncio
+import random
 from pyrogram import Client, filters
 from pyrogram.types import Message
-from database.db import waifus_col, add_waifu_to_harem, add_gold, is_registered_user
+from database.db import waifus_col, guess_games, add_gold, add_waifu_to_harem, is_registered_user
 
-# Game state memory (per chat)
-active_games = {}
+# -------- Settings -------- #
+REWARD_COINS = 20
+STREAK_REWARD = 20  # streak required to win a random waifu
+TIME_LIMIT = 300    # 5 min
 
-# Reward amount
-REWARD_GOLD = 200
+# -------- Helper Function: New Round -------- #
+async def send_new_round(chat_id: int, client: Client):
+    waifus = await waifus_col.find().to_list(length=None)
 
-
-async def send_new_round(chat_id, client: Client):
-    waifu = await waifus_col.aggregate([{"$sample": {"size": 1}}]).to_list(length=1)
-    if not waifu:
+    if not waifus:
+        await client.send_message(chat_id, "❌ No waifus uploaded yet!")
         return None
-    waifu = waifu[0]
 
-    msg = await client.send_photo(
+    waifu = random.choice(waifus)
+
+    # ✅ Handle image key
+    image_id = waifu.get("image") or waifu.get("file_id")
+    if not image_id:
+        await client.send_message(chat_id, f"⚠️ No image found for '{waifu.get('name', 'Unknown')}'.")
+        return None
+
+    # Question message
+    await client.send_photo(
         chat_id,
-        photo=waifu["image"],   # ✅ yahan DB me jo file_id save hua tha wahi use hoga
+        photo=image_id,
         caption=(
-            "🎭 **Guess the Waifu!**\n\n"
-            "⏳ You have **5 minutes** to guess her name!"
+            "🎭 **Character Guessing Game** 🎭\n\n"
+            "✨ A mysterious character has appeared! ✨\n\n"
+            "🔍 *Can you guess who this is?*\n"
+            "⏳ You have **5 minutes** to answer!\n\n"
+            "💬 Type just the **name** in chat!"
         )
     )
 
-    active_games[chat_id] = {
-        "waifu": waifu,
-        "msg_id": msg.id,
-        "task": asyncio.create_task(end_game_after_timeout(chat_id, client))
-    }
+    # Save game state in DB
+    await guess_games.update_one(
+        {"chat_id": chat_id},
+        {"$set": {
+            "answer": waifu["name"].lower(),
+            "waifu": waifu,
+            "active": True,
+            "streak": 0
+        }},
+        upsert=True
+    )
+
+    # End game after timeout
+    asyncio.create_task(end_game_after_timeout(chat_id, client))
+
     return waifu
 
 
-async def end_game_after_timeout(chat_id, client: Client):
-    await asyncio.sleep(300)  # 5 min
-    if chat_id in active_games:
-        waifu = active_games[chat_id]["waifu"]
+# -------- End Game Timeout -------- #
+async def end_game_after_timeout(chat_id: int, client: Client):
+    await asyncio.sleep(TIME_LIMIT)
+    game = await guess_games.find_one({"chat_id": chat_id, "active": True})
+    if game:
         await client.send_message(
             chat_id,
-            f"⏳ Time’s up! Nobody guessed **{waifu['name']}**.\n\n🎮 Game ended."
+            f"⏳ Time’s up! Nobody guessed **{game['answer'].title()}**.\n\n💔 The game has ended."
         )
-        del active_games[chat_id]
+        await guess_games.update_one({"chat_id": chat_id}, {"$set": {"active": False}})
 
 
-@Client.on_message(filters.command("nguess") & filters.group)
+# -------- Start Guess Game -------- #
+@Client.on_message(filters.command("waifuguess"))
 async def start_guess_game(client: Client, message: Message):
     chat_id = message.chat.id
-    if chat_id in active_games:
+    game = await guess_games.find_one({"chat_id": chat_id, "active": True})
+    if game:
         return await message.reply("⚠️ A game is already running in this group!")
 
     waifu = await send_new_round(chat_id, client)
-    if not waifu:
-        await message.reply("❌ No waifus uploaded yet. Use /upload first.")
-    else:
-        await message.reply("🎮 Guessing Game started! Type waifu’s **name** to guess.")
+    if waifu:
+        await message.reply("✅ Game started! Guess the waifu by typing her name 👀")
 
 
-@Client.on_message(filters.text & filters.group)
-async def handle_guess(client: Client, message: Message):
+# -------- Check Answers -------- #
+@Client.on_message(filters.text & ~filters.command(["waifuguess"]))
+async def check_answer(client: Client, message: Message):
     chat_id = message.chat.id
     user_id = message.from_user.id
-    text = message.text.strip().lower()
+    user_answer = message.text.strip().lower()
 
-    if chat_id not in active_games:
+    game = await guess_games.find_one({"chat_id": chat_id, "active": True})
+    if not game:
         return
 
-    waifu = active_games[chat_id]["waifu"]
+    correct_answer = game.get("answer", "").lower()
 
-    if text == waifu["name"].lower():
-        winner = message.from_user
-        await message.reply(
-            f"🏆 {winner.mention} guessed it right!\n\n✨ It was **{waifu['name']}** 🎉"
+    if user_answer == correct_answer:
+        waifu = game["waifu"]
+
+        # Update streak
+        new_streak = game.get("streak", 0) + 1
+
+        # Reward user with coins
+        if await is_registered_user(user_id):
+            await add_gold(user_id, REWARD_COINS)
+
+        msg_text = (
+            "🎉 **Correct!** 🎉\n\n"
+            f"🏆 +{REWARD_COINS} Coins | 🔥 Streak: {new_streak}\n\n"
+            f"The character was **{waifu['name']}** from **{waifu['anime']}** {waifu['rarity']}!"
         )
 
-        # Reward + add to harem
-        if await is_registered_user(user_id):
-            await add_gold(user_id, REWARD_GOLD)
-            await add_waifu_to_harem(user_id, waifu)
+        # If streak reached reward threshold
+        if new_streak >= STREAK_REWARD:
+            random_waifu = random.choice(await waifus_col.find().to_list(length=None))
+            if await is_registered_user(user_id):
+                await add_waifu_to_harem(user_id, random_waifu)
 
-        # End current game
-        active_games[chat_id]["task"].cancel()
-        del active_games[chat_id]
+            msg_text += (
+                "\n\n💎 **Bonus Reward!** 💎\n"
+                f"You maintained a **{STREAK_REWARD} streak** and received a random waifu: "
+                f"**{random_waifu['name']}** from **{random_waifu['anime']}** {random_waifu['rarity']}!"
+            )
+            new_streak = 0  # reset streak
+
+        await message.reply(msg_text)
+
+        # Update streak in DB
+        await guess_games.update_one(
+            {"chat_id": chat_id},
+            {"$set": {"streak": new_streak}}
+        )
 
         # Start next round
-        await asyncio.sleep(2)
         await send_new_round(chat_id, client)
