@@ -1,4 +1,3 @@
-# database/db.py
 import motor.motor_asyncio
 from config import DB_URI
 
@@ -21,7 +20,8 @@ async def add_user(user_id: int, username: str = None):
             "username": username,
             "balance": 0,
             "tickets": 0,
-            "waifus_collected": 0
+            "waifus_collected": 0,
+            "gold": 0
         }
         await users_col.insert_one(data)
 
@@ -46,6 +46,21 @@ async def update_tickets(user_id: int, amount: int):
     )
 
 
+async def add_gold(user_id: int, amount: int):
+    """Add gold to user"""
+    await users_col.update_one(
+        {"user_id": user_id},
+        {"$inc": {"gold": amount}},
+        upsert=True
+    )
+
+
+async def is_registered_user(user_id: int) -> bool:
+    """Check if user exists in DB"""
+    user = await users_col.find_one({"user_id": user_id})
+    return True if user else False
+
+
 # ----------------- WAIFUS -----------------
 async def upload_waifu(name: str, anime: str, rarity: str, image_url: str):
     waifu = {
@@ -64,10 +79,11 @@ async def get_random_waifu():
 
 
 # ----------------- HAREM -----------------
-async def add_waifu_to_harem(user_id: int, waifu_id):
+async def add_waifu_to_harem(user_id: int, waifu: dict):
+    """Store waifu in user's harem"""
     await harems_col.update_one(
         {"user_id": user_id},
-        {"$push": {"waifus": waifu_id}},
+        {"$push": {"waifus": waifu}},
         upsert=True
     )
     await users_col.update_one(
