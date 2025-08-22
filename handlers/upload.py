@@ -1,6 +1,6 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message
-from database.db import add_waifu
+from database.db import upload_waifu
 
 RARITIES = {
     1: "⚪️ Common",
@@ -49,7 +49,7 @@ async def upload_waifu_handler(client: Client, message: Message):
         image_file_id = message.reply_to_message.photo.file_id  # ✅ file_id save karo
 
         # Save waifu in DB
-        await add_waifu(name, anime, rarity, str(waifu_id), image_file_id)
+        await upload_waifu(name, anime, rarity, str(waifu_id), image_file_id)
 
         await message.reply(
             f"✅ **Waifu Uploaded Successfully!**\n\n"
