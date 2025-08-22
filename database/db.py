@@ -62,14 +62,15 @@ async def is_registered_user(user_id: int) -> bool:
 
 
 # ----------------- WAIFUS -----------------
-async def upload_waifu(name: str, anime: str, rarity: str, image_url: str):
-    waifu = {
+async def upload_waifu(name, anime, rarity, waifu_id, image_file_id):
+    waifu_data = {
         "name": name,
         "anime": anime,
         "rarity": rarity,
-        "image_url": image_url
+        "waifu_id": waifu_id,
+        "image": image_file_id  # ✅ yaha store karenge
     }
-    await waifus_col.insert_one(waifu)
+    await waifus_col.insert_one(waifu_data)
 
 
 async def get_random_waifu():
