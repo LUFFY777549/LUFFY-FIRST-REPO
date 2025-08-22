@@ -9,29 +9,29 @@ IMAGE_URL = "https://files.catbox.moe/n4sucx.jpg"
 @Client.on_message(filters.private & filters.command("start"))
 async def start_private(bot: Client, message: Message):
     caption = (
-    "┏━━━━━━━━━━━━━━━━━━━━━━━━━⧫\n"
-    "✾ Wᴇʟᴄᴏᴍᴇ ᴛᴏ ᴛʜᴇ NGuess Bᴏᴛ!\n"
-    "┗━━━━━━━━━━━━━━━━━━━━━━━━━⧫\n"
-    "┏━━━━━━━━━━━━━━━━━━━━━━━━━⧫\n"
-    "┠ ➻ I ᴡɪʟʟ ʜᴇʟᴘ ʏᴏᴜ ɴɢᴜᴇꜱꜱ... I ᴍᴇᴀɴ, ᴅɪꜱᴄᴏᴠᴇʀ ʏᴏᴜʀ ʟᴜᴄᴋ!\n"
-    "┃    ɪɴ ʏᴏᴜʀ ɢʀᴏᴜᴘ ᴄʜᴀᴛ.\n"
-    "┠ ➻ Yᴏᴜ ᴄᴀɴ ᴘʟᴀʏ ᴜꜱɪɴɢ /nguess ᴄᴏᴍᴍᴀɴᴅ\n"
-    "┃    ᴀɴᴅ ꜱᴇᴇ ᴡʜᴀᴛ ꜰᴏʀᴛᴜɴᴇ ᴀᴡᴀɪᴛꜱ ʏᴏᴜ!\n"
-    "┗━━━━━━━━━━━━━━━━━━━━━━━━━⧫\n"
-    "Tᴀᴘ ᴏɴ ʙᴜᴛᴛᴏɴs ғᴏʀ ᴍᴏʀᴇ ɪɴғᴏ."
-)
+        "┏━━━━━━━━━━━━━━━━━━━━━━━━━⧫\n"
+        "✾ Wᴇʟᴄᴏᴍᴇ ᴛᴏ ᴛʜᴇ NGuess Bᴏᴛ!\n"
+        "┗━━━━━━━━━━━━━━━━━━━━━━━━━⧫\n"
+        "┏━━━━━━━━━━━━━━━━━━━━━━━━━⧫\n"
+        "┠ ➻ I ᴡɪʟʟ ʜᴇʟᴘ ʏᴏᴜ ɴɢᴜᴇꜱꜱ... I ᴍᴇᴀɴ, ᴅɪꜱᴄᴏᴠᴇʀ ʏᴏᴜʀ ʟᴜᴄᴋ!\n"
+        "┃    ɪɴ ʏᴏᴜʀ ɢʀᴏᴜᴘ ᴄʜᴀᴛ.\n"
+        "┠ ➻ Yᴏᴜ ᴄᴀɴ ᴘʟᴀʏ ᴜꜱɪɴɢ /nguess ᴄᴏᴍᴍᴀɴᴅ\n"
+        "┃    ᴀɴᴅ ꜱᴇᴇ ᴡʜᴀᴛ ꜰᴏʀᴛᴜɴᴇ ᴀᴡᴀɪᴛꜱ ʏᴏᴜ!\n"
+        "┗━━━━━━━━━━━━━━━━━━━━━━━━━⧫\n"
+        "Tᴀᴘ ᴏɴ ʙᴜᴛᴛᴏɴs ғᴏʀ ᴍᴏʀᴇ ɪɴғᴏ."
+    )
 
-buttons = [
-    [InlineKeyboardButton("➕ ADD ME TO YOUR GROUP ➕", url=f"https://t.me/{bot.me.username}?startgroup=true")],
-    [
-        InlineKeyboardButton("📢 Support Channel", url="https://t.me/Naruto_X_Waifu"),
-        InlineKeyboardButton("💬 Support Chat", url="https://t.me/strawberry_graveyard")
-    ],
-    [
-        InlineKeyboardButton("👑 Owner", url="https://t.me/Vasto_X_kurosaki"),
-        InlineKeyboardButton("👨‍💻 Developer", url="https://t.me/Uzumaki_X_Naruto_6")
+    buttons = [
+        [InlineKeyboardButton("➕ ADD ME TO YOUR GROUP ➕", url=f"https://t.me/{bot.me.username}?startgroup=true")],
+        [
+            InlineKeyboardButton("📢 Support Channel", url="https://t.me/Naruto_X_Waifu"),
+            InlineKeyboardButton("💬 Support Chat", url="https://t.me/strawberry_graveyard")
+        ],
+        [
+            InlineKeyboardButton("👑 Owner", url="https://t.me/Vasto_X_kurosaki"),
+            InlineKeyboardButton("👨‍💻 Developer", url="https://t.me/Uzumaki_X_Naruto_6")
+        ]
     ]
-]
 
     await message.reply_photo(
         photo=IMAGE_URL,
