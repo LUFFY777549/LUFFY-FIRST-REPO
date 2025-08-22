@@ -9,6 +9,7 @@ db = mongo_client["WaifuNguessBot"]
 users_col = db["users"]
 waifus_col = db["waifus"]
 harems_col = db["harems"]
+guess_games = db["guess_games"]
 
 
 # ----------------- USERS -----------------
